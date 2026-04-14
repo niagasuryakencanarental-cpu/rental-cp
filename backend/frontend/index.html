@@ -1,0 +1,29 @@
+<input type="file" id="upload">
+<pre id="result"></pre>
+
+<script>
+document.getElementById("upload").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", "YOUR_PRESET");
+
+  const upload = await fetch("https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload", {
+    method: "POST",
+    body: fd
+  });
+
+  const data = await upload.json();
+
+  const ocr = await fetch("http://localhost:3000/ocr", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ imageUrl: data.secure_url })
+  });
+
+  const result = await ocr.json();
+
+  document.getElementById("result").textContent = result.text;
+});
+</script>
