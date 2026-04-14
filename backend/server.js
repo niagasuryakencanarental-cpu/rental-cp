@@ -3,9 +3,11 @@ import cors from "cors";
 import fetch from "node-fetch";
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
+// route OCR
 app.post("/ocr", async (req, res) => {
   try {
     const { imageUrl } = req.body;
@@ -14,22 +16,40 @@ app.post("/ocr", async (req, res) => {
       `https://vision.googleapis.com/v1/images:annotate?key=${process.env.VISION_API_KEY}`,
       {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
-          requests: [{
-            image: { source: { imageUri: imageUrl }},
-            features: [{ type: "DOCUMENT_TEXT_DETECTION" }]
-          }]
+          requests: [
+            {
+              image: {
+                source: { imageUri: imageUrl }
+              },
+              features: [
+                { type: "DOCUMENT_TEXT_DETECTION" }
+              ]
+            }
+          ]
         })
       }
     );
 
     const data = await response.json();
-    res.json({ text: data.responses[0].fullTextAnnotation?.text || "" });
+
+    const text =
+      data.responses[0].fullTextAnnotation?.text || "";
+
+    res.json({ text });
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(3000);
+// 🔥 PORT FIX UNTUK RENDER
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server jalan di port ${PORT}`);
+});
